@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, Square, Sparkles, Loader2, Trash2, Cpu, Gamepad2, RotateCcw } from 'lucide-react';
+import React from 'react';
+import { Play, Square, Trash2, Gamepad2 } from 'lucide-react';
 
 interface ControlPanelProps {
   isPlaying: boolean;
@@ -7,27 +7,19 @@ interface ControlPanelProps {
   setBpm: (bpm: number) => void;
   onPlayToggle: () => void;
   onClear: () => void;
-  onGenerate: (prompt: string) => Promise<void>;
-  isGenerating: boolean;
   isChiptune: boolean;
   onToggleChiptune: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ 
-  isPlaying, bpm, setBpm, onPlayToggle, onClear, onGenerate, isGenerating, isChiptune, onToggleChiptune
+  isPlaying, bpm, setBpm, onPlayToggle, onClear, isChiptune, onToggleChiptune
 }) => {
-  const [prompt, setPrompt] = useState('');
-
-  const handleGenerate = () => {
-    if (!prompt.trim()) return;
-    onGenerate(prompt);
-  };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-stretch xl:items-center justify-between bg-chassis-metal p-4 rounded shadow-hardware-out border-t border-white/10">
+    <div className="flex flex-col xl:flex-row gap-6 items-center justify-center bg-chassis-metal p-4 rounded shadow-hardware-out border-t border-white/10">
       
-      {/* Left: Transport & Master Control */}
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-6">
+      {/* Main Control Section */}
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-6 justify-center">
         
         {/* LCD Display Module */}
         <div className="relative group">
@@ -110,44 +102,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <Trash2 size={18} />
             </button>
         </div>
-      </div>
-
-      {/* Right: AI Generator (Embedded Module) */}
-      <div className="flex-1 w-full xl:w-auto bg-[#111] p-1 rounded shadow-hardware-in border-t border-l border-black border-r border-b border-white/10">
-         <div className="bg-gray-900 p-3 rounded border border-gray-700 h-full flex flex-col relative overflow-hidden">
-             
-             {/* Decorative Screw */}
-             <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-600 shadow-inner"></div>
-             
-             <div className="flex items-center gap-2 mb-2">
-                <Cpu size={16} className="text-sky-500" />
-                <span className="text-[10px] font-tech tracking-[0.2em] text-sky-500 uppercase">AI Pattern Generator</span>
-             </div>
-
-             <div className="flex gap-0 bg-black border border-gray-600 rounded-sm p-1 shadow-inner">
-                <div className="flex-1 font-mono text-sm relative">
-                    <span className="absolute left-2 top-2.5 text-green-500 select-none">&gt;</span>
-                    <input
-                        type="text"
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-                        placeholder="INPUT STYLE..."
-                        className="w-full bg-transparent border-none text-green-400 placeholder-green-900/50 focus:ring-0 py-2 pl-6 uppercase tracking-wider"
-                        disabled={isGenerating}
-                        autoComplete="off"
-                    />
-                </div>
-                <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating || !prompt.trim()}
-                    className="bg-sky-700 hover:bg-sky-600 text-white px-4 py-1 rounded-sm border-l border-gray-600 text-xs font-bold tracking-wider flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    {isGenerating ? <Loader2 className="animate-spin" size={14} /> : <Sparkles size={14} />}
-                    GEN
-                </button>
-             </div>
-         </div>
       </div>
       
     </div>

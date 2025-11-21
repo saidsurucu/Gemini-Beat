@@ -1,5 +1,5 @@
 {
-  "name": "NeonBeat AI",
-  "description": "A fully browser-based electronic music sequencer and beatmaker powered by Gemini AI for pattern generation. Features real-time synthesis, 16-step sequencing, and AI-driven creativity.",
+  "name": "NeonBeat",
+  "description": "A fully browser-based electronic music sequencer and beatmaker. Features real-time synthesis, 16-step sequencing, and hardware-style effects.",
   "requestFramePermissions": []
 }

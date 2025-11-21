@@ -62,14 +62,17 @@ class AudioEngine {
       this.delayNode.connect(this.delayWetNode);
       this.delayWetNode.connect(this.masterGain);
 
-      // Defaults
+      // Defaults - ENSURE DRY SIGNAL IS ON BY DEFAULT
       this.delayDryNode.gain.value = 1.0;
       this.delayWetNode.gain.value = 0.0;
       this.delayFeedbackNode.gain.value = 0.0;
     }
+  }
 
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+  public async resume() {
+    if (!this.ctx) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      await this.ctx.resume();
     }
   }
 
@@ -86,14 +89,16 @@ class AudioEngine {
     // Update Delay
     if (fx.delay.enabled) {
        const now = this.ctx.currentTime;
-       this.delayNode.delayTime.setValueAtTime(fx.delay.time, now);
+       this.delayNode.delayTime.setValueAtTime(Math.max(0.01, fx.delay.time), now);
        this.delayFeedbackNode.gain.setValueAtTime(fx.delay.feedback, now);
        this.delayWetNode.gain.setValueAtTime(fx.delay.mix, now);
-       this.delayDryNode.gain.setValueAtTime(1 - fx.delay.mix * 0.5, now); // Slight dry dip when wet increases
+       this.delayDryNode.gain.setValueAtTime(1 - (fx.delay.mix * 0.5), now); // Slight dry dip when wet increases
     } else {
-       this.delayWetNode.gain.value = 0;
-       this.delayDryNode.gain.value = 1;
-       this.delayFeedbackNode.gain.value = 0;
+       // Bypass delay completely if disabled
+       const now = this.ctx.currentTime;
+       this.delayWetNode.gain.setValueAtTime(0, now);
+       this.delayDryNode.gain.setValueAtTime(1, now);
+       this.delayFeedbackNode.gain.setValueAtTime(0, now);
     }
   }
 
@@ -166,7 +171,7 @@ class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = 'square'; 
       osc.connect(gain);
-      gain.connect(this.mixBus);
+      gain.connect(this.mixBus); // Ensure connection to mixBus
       osc.frequency.setValueAtTime(150, time);
       osc.frequency.exponentialRampToValueAtTime(50, time + 0.1);
       gain.gain.setValueAtTime(vol, time);
@@ -235,9 +240,11 @@ class AudioEngine {
       filter.type = filterType;
       filter.frequency.value = filterFreq;
       const gain = this.ctx.createGain();
+      
       noise.connect(filter);
       filter.connect(gain);
-      gain.connect(this.mixBus);
+      gain.connect(this.mixBus); // Ensure connection
+      
       gain.gain.setValueAtTime(vol, time);
       gain.gain.linearRampToValueAtTime(0, time + duration);
       noise.start(time);

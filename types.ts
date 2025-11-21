@@ -23,14 +23,6 @@ export interface PatternData {
   tracks: Track[];
 }
 
-export interface AIResponseSchema {
-  bpm: number;
-  tracks: {
-    type: string;
-    steps: number[]; // 0 or 1
-  }[];
-}
-
 export interface AudioContextState {
   isPlaying: boolean;
   currentStep: number;
@@ -48,4 +40,12 @@ export interface MasterEffects {
     feedback: number; // 0.0 to 0.9
     mix: number; // 0.0 to 1.0 (Wet level)
   };
+}
+
+export interface AIResponseSchema {
+  bpm: number;
+  tracks: {
+    type: string;
+    steps: number[];
+  }[];
 }

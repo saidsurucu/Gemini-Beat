@@ -4,7 +4,6 @@ import { audioEngine } from './utils/audioEngine';
 import TrackRow from './components/TrackRow';
 import ControlPanel from './components/ControlPanel';
 import FXPanel from './components/FXPanel';
-import { generatePattern } from './services/geminiService';
 
 // Default Initial State
 const INITIAL_BPM = 120;
@@ -34,7 +33,6 @@ const App: React.FC = () => {
   const [bpm, setBpm] = useState(INITIAL_BPM);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isChiptune, setIsChiptune] = useState(false);
   const [fxSettings, setFxSettings] = useState<MasterEffects>(INITIAL_FX);
 
@@ -47,7 +45,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const unlockAudio = () => {
-      // Just a listener cleanup mainly, play button handles logic
+      // Listener cleanup if needed
     };
     document.addEventListener('click', unlockAudio);
     return () => document.removeEventListener('click', unlockAudio);
@@ -100,9 +98,10 @@ const App: React.FC = () => {
   }, [tracks]);
 
   const scheduler = useCallback(() => {
-    if (!audioEngine.getCurrentTime()) return;
+    // FIXED: Do not return if time is 0, allowing scheduler to start even if context is warming up
+    const currentTime = audioEngine.getCurrentTime();
     
-    while (nextNoteTimeRef.current < audioEngine.getCurrentTime() + scheduleAheadTime) {
+    while (nextNoteTimeRef.current < currentTime + scheduleAheadTime) {
       scheduleNote(currentStepRef.current, nextNoteTimeRef.current);
       nextNote();
     }
@@ -111,12 +110,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (isPlaying) {
-      audioEngine.init(); // Ensure context is running
-      // Apply FX immediately on start
+      audioEngine.init();
       audioEngine.updateEffects(fxSettings);
       
-      if (audioEngine.getCurrentTime() === 0) audioEngine.init();
-      nextNoteTimeRef.current = audioEngine.getCurrentTime() + 0.1;
+      // Start slightly in the future to avoid immediate catch-up glitch
+      const now = audioEngine.getCurrentTime();
+      nextNoteTimeRef.current = now + 0.1;
       currentStepRef.current = 0;
       scheduler();
     } else {
@@ -125,11 +124,11 @@ const App: React.FC = () => {
     return () => {
       if (timerIDRef.current) window.clearTimeout(timerIDRef.current);
     };
-  }, [isPlaying, scheduler, fxSettings]);
+  }, [isPlaying, scheduler]); // Removed fxSettings from here to avoid restart loops
 
-  const togglePlay = () => {
-    // Critical for browser autoplay policy
-    audioEngine.init();
+  const togglePlay = async () => {
+    // Ensure audio context is resumed (critical for browsers)
+    await audioEngine.resume();
     setIsPlaying(!isPlaying);
   };
 
@@ -158,33 +157,6 @@ const App: React.FC = () => {
     setCurrentStep(0);
   };
 
-  const handleAIGenerate = async (prompt: string) => {
-    setIsGenerating(true);
-    setIsPlaying(false);
-    try {
-      const data = await generatePattern(prompt);
-      if (data) {
-        setBpm(Math.min(Math.max(data.bpm, 60), 180));
-        setTracks(prevTracks => {
-           return prevTracks.map(track => {
-             const aiTrack = data.tracks.find(t => t.type.toUpperCase() === track.type.toUpperCase());
-             if (aiTrack && aiTrack.steps.length === 16) {
-               return {
-                 ...track,
-                 steps: aiTrack.steps.map(s => s === 1)
-               };
-             }
-             return track;
-           });
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   return (
     <div className="h-screen w-screen flex items-center justify-center p-2 md:p-6 overflow-hidden">
       
@@ -208,7 +180,7 @@ const App: React.FC = () => {
             <div className="flex justify-between items-end mb-4 pl-4 pr-4">
               <div>
                  <h1 className="text-white/90 font-display text-3xl tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-                    GEMINI<span className="text-sky-500">BEAT</span>
+                    NEON<span className="text-sky-500">BEAT</span>
                  </h1>
                  <div className="text-[10px] font-tech text-gray-500 tracking-[0.3em] uppercase pl-1 mt-[-4px]">
                     Integrated Rhythm Station
@@ -228,13 +200,11 @@ const App: React.FC = () => {
               setBpm={setBpm}
               onPlayToggle={togglePlay}
               onClear={handleClear}
-              onGenerate={handleAIGenerate}
-              isGenerating={isGenerating}
               isChiptune={isChiptune}
               onToggleChiptune={toggleChiptune}
             />
 
-            {/* NEW: Master FX Rack Unit */}
+            {/* Master FX Rack Unit */}
             <FXPanel settings={fxSettings} onUpdate={setFxSettings} />
 
           </div>

@@ -1,18 +1,11 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { AIResponseSchema, InstrumentType } from "../types";
+import { AIResponseSchema } from "../types";
 
 // Initialize Gemini API
-// Assuming process.env.API_KEY is available via Vite/CreateReactApp or similar env handling
-const apiKey = process.env.API_KEY || '';
-
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generatePattern = async (userPrompt: string): Promise<AIResponseSchema | null> => {
-  if (!apiKey) {
-    console.error("API Key is missing");
-    throw new Error("Missing API Key");
-  }
-
+  
   const responseSchema: Schema = {
     type: Type.OBJECT,
     properties: {
