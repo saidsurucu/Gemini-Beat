@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeonBeat AI - Pro Hardware Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Share+Tech+Mono&family=VT323&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              chassis: {
+                base: '#262626',
+                dark: '#171717',
+                light: '#333333',
+                metal: '#404040',
+                accent: '#d4d4d8'
+              },
+              lcd: {
+                bg: '#2e3b28',
+                text: '#82f216',
+                dim: '#3d5232'
+              },
+            },
+            fontFamily: {
+              mono: ['"Share Tech Mono"', 'monospace'],
+              lcd: ['"VT323"', 'monospace'],
+              display: ['"Audiowide"', 'cursive'],
+              tech: ['"Rajdhani"', 'sans-serif'],
+            },
+            boxShadow: {
+              'hardware-out': '3px 3px 6px #0f0f0f, -1px -1px 2px #4a4a4a',
+              'hardware-deep': '5px 5px 10px #0a0a0a, -2px -2px 4px #3a3a3a',
+              'hardware-in': 'inset 2px 2px 5px #000, inset -1px -1px 2px #444',
+              'hardware-pressed': 'inset 3px 3px 6px #000, inset -1px -1px 1px #555',
+              'screen-glow': '0 0 15px rgba(130, 242, 22, 0.3)',
+              'led-red': '0 0 8px #ef4444',
+              'led-green': '0 0 8px #22c55e',
+              'glass': 'inset 0 0 20px rgba(255,255,255,0.05), inset 0 0 3px rgba(255,255,255,0.1)'
+            },
+            backgroundImage: {
+              'brushed-metal': 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 10%, rgba(0,0,0,0.1) 50%, rgba(255,255,255,0) 90%, rgba(255,255,255,0.05) 100%)',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #0f0f0f;
+        /* Studio Table Mat Texture */
+        background-image: radial-gradient(#1f1f1f 15%, transparent 16%), radial-gradient(#1f1f1f 15%, transparent 16%);
+        background-size: 40px 40px;
+        background-position: 0 0, 20px 20px;
+        color: #e5e5e5;
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      /* --- TEXTURES --- */
+      
+      .texture-metal-dark {
+        background-color: #202020;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+      }
+      
+      .texture-wood {
+        background: #3e2723;
+        background-image: 
+          linear-gradient(90deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.3) 100%),
+          url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.1'/%3E%3C/svg%3E");
+        border-left: 1px solid rgba(255,255,255,0.1);
+        box-shadow: inset -5px 0 15px rgba(0,0,0,0.6);
+      }
+
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+      }
+
+      /* --- CONTROLS --- */
+
+      /* Realistic Fader Track */
+      .fader-track-slot {
+        background: #0a0a0a;
+        box-shadow: inset 1px 1px 3px #000, inset -1px -1px 1px #333;
+        border-radius: 4px;
+      }
+
+      /* Custom Range Input (Mixer Fader) */
+      input[type=range].fader {
+        -webkit-appearance: none;
+        background: transparent;
+      }
+      input[type=range].fader::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 28px;
+        width: 16px;
+        border-radius: 1px;
+        background: linear-gradient(180deg, #444 0%, #222 50%, #000 100%);
+        border: 1px solid #000;
+        box-shadow: 
+          0 4px 4px rgba(0,0,0,0.5), 
+          inset 0 1px 0 rgba(255,255,255,0.2);
+        cursor: grab;
+        margin-top: -13px;
+        position: relative;
+      }
+      input[type=range].fader::-webkit-slider-thumb::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: white;
+        transform: translateY(-50%);
+      }
+      input[type=range].fader::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 2px;
+        cursor: pointer;
+        background: #000;
+      }
+
+      /* Rotary Knob Styles */
+      .knob-outer {
+        border-radius: 50%;
+        background: conic-gradient(#333 0%, #111 40%, #333 50%, #111 60%, #333 100%);
+        box-shadow: 2px 2px 5px #000, -1px -1px 1px #555;
+        position: relative;
+      }
+      .knob-cap {
+        position: absolute;
+        inset: 2px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #555, #222);
+        box-shadow: inset 0 0 2px rgba(0,0,0,0.8);
+        pointer-events: none;
+      }
+      .knob-pointer {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        height: 30%;
+        width: 2px;
+        background: white;
+        transform: translateX(-50%);
+        border-radius: 1px;
+        box-shadow: 0 0 2px white;
+      }
+
+      /* Screw Head (Phillips) */
+      .screw-head {
+        width: 10px;
+        height: 10px;
+        background: radial-gradient(circle at 30% 30%, #aaa, #555);
+        border-radius: 50%;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .screw-head::before, .screw-head::after {
+        content: '';
+        position: absolute;
+        background: #1a1a1a;
+        opacity: 0.8;
+      }
+      .screw-head::before { width: 60%; height: 2px; transform: rotate(45deg); }
+      .screw-head::after { width: 60%; height: 2px; transform: rotate(-45deg); }
+
+      /* Custom Scrollbar */
+      .custom-scroll::-webkit-scrollbar {
+        width: 10px;
+        background: #111;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #0a0a0a;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 5px;
+        border: 2px solid #0a0a0a;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root" class="h-full w-full flex items-center justify-center"></div>
+  </body>
+</html>
